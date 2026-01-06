@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NextJs Starter Kit",
+  title: "Anveshak - Intelligent Log Orchestration",
+  description: "Intelligent multi-agent log orchestration system.",
 };
 
 export default function RootLayout({
