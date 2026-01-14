@@ -44,8 +44,6 @@ import {
   Settings,
   FileText,
   RefreshCw,
-  HelpCircle,
-  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -59,10 +57,6 @@ const Page = () => {
     (typeof crashes)[0] | null
   >(null);
   const [isCrashConfirmOpen, setIsCrashConfirmOpen] = useState(false);
-
-  // Explain functionality state
-  const [explanations, setExplanations] = useState<Record<string, string>>({});
-  const [explainLoading, setExplainLoading] = useState<Record<string, boolean>>({});
 
   // Configuration form state with prefilled values
   const [config, setConfig] = useState({
@@ -465,38 +459,6 @@ const Page = () => {
     } catch (error) {
       toast.error("Failed to create issue");
       console.error("Error creating issue:", error);
-    }
-  };
-
-  const handleExplainIssue = async (issue: string, issueId: string) => {
-    setExplainLoading((prev) => ({ ...prev, [issueId]: true }));
-    try {
-      const response = await fetch("/api", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ issue }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to get explanation");
-      }
-
-      const data = await response.json();
-      setExplanations((prev) => ({
-        ...prev,
-        [issueId]: data.description || "No explanation available",
-      }));
-    } catch (error) {
-      console.error("Error explaining issue:", error);
-      toast.error("Failed to get explanation");
-      setExplanations((prev) => ({
-        ...prev,
-        [issueId]: "Failed to load explanation",
-      }));
-    } finally {
-      setExplainLoading((prev) => ({ ...prev, [issueId]: false }));
     }
   };
 
@@ -1288,30 +1250,8 @@ const Page = () => {
                       )}
                     </div>
                   )}
-                  <div className="pt-2 border-t border-slate-200 flex gap-2 flex-wrap">
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleExplainIssue(insight.insight, `insight-all-${insight.id}`);
-                      }}
-                      variant="outline"
-                      size="sm"
-                      disabled={explainLoading[`insight-all-${insight.id}`]}
-                      className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
-                    >
-                      {explainLoading[`insight-all-${insight.id}`] ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Explaining...
-                        </>
-                      ) : (
-                        <>
-                          <HelpCircle className="h-4 w-4 mr-2" />
-                          Explain
-                        </>
-                      )}
-                    </Button>
-                    {!isErrorInsight(insight) && (
+                  {!isErrorInsight(insight) && (
+                    <div className="pt-2 border-t border-slate-200">
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1324,16 +1264,6 @@ const Page = () => {
                         <Plus className="h-4 w-4 mr-2" />
                         Create an Issue
                       </Button>
-                    )}
-                  </div>
-                  {explanations[`insight-all-${insight.id}`] && (
-                    <div className="pt-2 border-t border-slate-200">
-                      <h4 className="font-semibold text-slate-900 mb-2">
-                        Explanation
-                      </h4>
-                      <p className="text-slate-700 whitespace-pre-wrap">
-                        {explanations[`insight-all-${insight.id}`]}
-                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -1461,46 +1391,11 @@ const Page = () => {
                     </ul>
                   </div>
                   <div className="pt-2 border-t border-slate-200">
-                    <div className="text-sm text-slate-600 mb-3">
+                    <div className="text-sm text-slate-600">
                       <span className="font-medium">Timestamp: </span>
                       {formatDate(crash.timestamp)}
                     </div>
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleExplainIssue(
-                          `${crash.crash_type}: ${crash.root_cause}`,
-                          `crash-all-${crash.id}`
-                        );
-                      }}
-                      variant="outline"
-                      size="sm"
-                      disabled={explainLoading[`crash-all-${crash.id}`]}
-                      className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
-                    >
-                      {explainLoading[`crash-all-${crash.id}`] ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Explaining...
-                        </>
-                      ) : (
-                        <>
-                          <HelpCircle className="h-4 w-4 mr-2" />
-                          Explain
-                        </>
-                      )}
-                    </Button>
                   </div>
-                  {explanations[`crash-all-${crash.id}`] && (
-                    <div className="pt-2 border-t border-slate-200">
-                      <h4 className="font-semibold text-slate-900 mb-2">
-                        Explanation
-                      </h4>
-                      <p className="text-slate-700 whitespace-pre-wrap">
-                        {explanations[`crash-all-${crash.id}`]}
-                      </p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             ))}
@@ -1601,30 +1496,8 @@ const Page = () => {
                       )}
                     </div>
                   )}
-                  <div className="pt-2 border-t border-slate-200 flex gap-2 flex-wrap">
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleExplainIssue(selectedInsight.insight, `insight-${selectedInsight.id}`);
-                      }}
-                      variant="outline"
-                      size="sm"
-                      disabled={explainLoading[`insight-${selectedInsight.id}`]}
-                      className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
-                    >
-                      {explainLoading[`insight-${selectedInsight.id}`] ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Explaining...
-                        </>
-                      ) : (
-                        <>
-                          <HelpCircle className="h-4 w-4 mr-2" />
-                          Explain
-                        </>
-                      )}
-                    </Button>
-                    {!isErrorInsight(selectedInsight) && (
+                  {!isErrorInsight(selectedInsight) && (
+                    <div className="pt-2 border-t border-slate-200">
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1637,16 +1510,6 @@ const Page = () => {
                         <Plus className="h-4 w-4 mr-2" />
                         Create an Issue
                       </Button>
-                    )}
-                  </div>
-                  {explanations[`insight-${selectedInsight.id}`] && (
-                    <div className="pt-2 border-t border-slate-200">
-                      <h4 className="font-semibold text-slate-900 mb-2">
-                        Explanation
-                      </h4>
-                      <p className="text-slate-700 whitespace-pre-wrap">
-                        {explanations[`insight-${selectedInsight.id}`]}
-                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -1775,46 +1638,11 @@ const Page = () => {
                     </ul>
                   </div>
                   <div className="pt-2 border-t border-slate-200">
-                    <div className="text-sm text-slate-600 mb-3">
+                    <div className="text-sm text-slate-600">
                       <span className="font-medium">Timestamp: </span>
                       {formatDate(selectedCrash.timestamp)}
                     </div>
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleExplainIssue(
-                          `${selectedCrash.crash_type}: ${selectedCrash.root_cause}`,
-                          `crash-${selectedCrash.id}`
-                        );
-                      }}
-                      variant="outline"
-                      size="sm"
-                      disabled={explainLoading[`crash-${selectedCrash.id}`]}
-                      className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
-                    >
-                      {explainLoading[`crash-${selectedCrash.id}`] ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Explaining...
-                        </>
-                      ) : (
-                        <>
-                          <HelpCircle className="h-4 w-4 mr-2" />
-                          Explain
-                        </>
-                      )}
-                    </Button>
                   </div>
-                  {explanations[`crash-${selectedCrash.id}`] && (
-                    <div className="pt-2 border-t border-slate-200">
-                      <h4 className="font-semibold text-slate-900 mb-2">
-                        Explanation
-                      </h4>
-                      <p className="text-slate-700 whitespace-pre-wrap">
-                        {explanations[`crash-${selectedCrash.id}`]}
-                      </p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </>
